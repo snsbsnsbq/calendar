@@ -1,0 +1,78 @@
+.calendar {
+    width: 200px;
+    height: 215px;
+    background: lightblue;
+    padding: 5px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    margin-top: 5px;
+}
+
+.cntlArrow {
+    display: flex;
+    justify-content: space-between;
+}
+
+.main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 200px;
+}
+
+.days {
+    display: flex;
+}
+
+.cell {
+    text-align: center;
+    width: 26px;
+    height: 26px;
+}
+
+.cellH {
+    text-align: center;
+    font-weight: bold;
+
+    width: 26px;
+    height: 26px;
+}
+
+.date {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.dateCell {
+    padding: 4px 9px;
+}
+
+.cellActive {
+    text-align: center;
+    width: 26px;
+    color: white;
+    height: 26px;
+}
+
+.cell:hover {
+    background-color: white;
+    color: black;
+    border-radius: 50%;
+}
+
+.cellActive:hover {
+    background-color: rgb(202, 217, 245);
+    border-radius: 50%;
+
+}
+
+.cellOpacity {
+    text-align: center;
+    width: 26px;
+    height: 26px;
+    opacity: 0.7;
+}

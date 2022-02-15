@@ -1,0 +1,157 @@
+.wrapper {
+    background: lightcyan;
+    flex-grow: 1;
+    height: calc(100vh - 49px);
+    display: flex;
+    flex-direction: column;
+}
+
+.col_wrapper {
+    display: flex;
+    justify-content: left;
+    overflow-y: scroll;
+    position: relative;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    min-width: 300px;
+}
+
+.cell {
+    margin: 0 auto;
+    border-bottom: 1px solid black;
+    flex-grow: 2;
+    position: relative;
+}
+
+/* .cell::before{
+    content:'';
+    position: absolute;
+    width: 1px;
+    background: black;
+    height:25px;
+    top:25px;
+    left: 0;
+} */
+
+.date {
+    font-size: 25px;
+    text-align: center;
+}
+
+
+.day {
+    font-size: 11px;
+    text-align: center;
+}
+
+/* .day:hover {
+    background-color: white;
+    border-radius: 50%;
+} */
+
+
+.cellHour {
+    height: 50px;
+    border-left: 1px solid #000000;
+    flex-grow: 2;
+    border-bottom: 1px solid black;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* .cellHour:hover {
+    background-color: white;
+} */
+
+
+.preCell {
+    box-sizing: border-box;
+    position: relative;
+    height: 50px;
+    min-width: 60px;
+    padding: 10px;
+    -webkit-user-select: none;
+    text-align: center;
+}
+
+.preCell_header {
+    box-sizing: border-box;
+    position: relative;
+    height: 50px;
+    min-width: 60px;
+    padding: 10px;
+    -webkit-user-select: none;
+    text-align: center;
+    border-bottom: 1px solid black;
+}
+
+.scrollHider {
+    overflow-x: hidden;
+    flex-grow: 1;
+}
+
+.main {
+    overflow-y: scroll;
+    width: calc(100% + 17px);
+    height: 100%;
+    position: relative;
+}
+
+.taskBar {
+    position: absolute;
+    flex-grow: 1;
+    height: 1200px;
+    z-index: 5;
+    position: relative;
+    /* opacity: 0.4; */
+    /* background-color: thistle; */
+    border-left: 1px solid black;
+}
+
+.task {
+    position: absolute;
+    width: 100%;
+    z-index: 6;
+    background-color: fuchsia;
+    opacity: 0.4;
+    top: 0px;
+    border-radius: 10px;
+    border: 1px solid black;
+}
+
+.task::before {
+    content: '';
+    width: 100%;
+    height: 5px;
+    opacity: 1;
+    position: absolute;
+    bottom: 0;
+    cursor: s-resize;
+}
+
+.border {
+    box-sizing: border-box;
+    min-height: 50px;
+    width: 0;
+
+}
+
+.border::after {
+    content: "";
+    position: absolute;
+    border-bottom: black 1px solid;
+    width: 100%;
+    margin-top: -1px;
+}
+
+.marginBar {
+    width: 30px;
+    height: 1200px;
+    z-index: 5;
+    position: relative;
+    background-color: white;
+    border-left: 1px solid black;
+}

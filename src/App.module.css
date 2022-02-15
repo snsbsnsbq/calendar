@@ -1,0 +1,7 @@
+.wrapper{
+    display: flex;
+}
+
+.mainCalendar{
+    flex-grow: 1;
+}
