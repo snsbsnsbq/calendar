@@ -6,11 +6,15 @@
     flex-direction: column;
 }
 
+.overFlow {
+    overflow-y: scroll;
+}
+
 .col_wrapper {
     display: flex;
     justify-content: left;
-    overflow-y: scroll;
     position: relative;
+    overflow-y: hidden;
 }
 
 .header {

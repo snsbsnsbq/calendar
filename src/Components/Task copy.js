@@ -42,9 +42,8 @@ function Task({ note, cord, setStartCord, taskArray, setTaskArray, day, noteInde
                 setTaskArray([...newTaskArray])
             }
             document.addEventListener('mouseup', handler)
-            return () => document.removeEventListener('mouseup', handler)
+            return () => document.removeEventListener('mousemove', handler)
         }
-
     }, [dragable])
 
     return (

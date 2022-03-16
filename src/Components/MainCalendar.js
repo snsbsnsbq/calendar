@@ -1,12 +1,30 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import s from './MainCalendar.module.css';
 import Task from './Task';
 
 // http://backend.my/events?from=2022-01-01&to=2022-02-28
+const days = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
+const hourArray = (() => {
+    const arr = new Array(24)
+    for (let i = 0; i < arr.length; i++) {
+        arr[i] = `${i}:00`
+    }
+    return arr
+})()
+
+const heightToTime = (height) => {
+    const hourHeight = 50
+    const h = Math.floor(height / hourHeight)
+    const m = Math.floor(height % hourHeight / hourHeight * 4) * 15
+    return `${h}:${m.toString().padStart(2, '0')}`
+}
+
+const getDate = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
 
 function MainCalendar({ day }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-
     const getWeekArray = () => {
         const date = new Date(activeDay)
         if (date.getDay() === 0) {
@@ -27,32 +45,44 @@ function MainCalendar({ day }) {
     const [weekArray, setWeekArray] = useState(getWeekArray)
     const [taskArray, setTaskArray] = useState([])
     const [newTask, setNewTask] = useState({})
-    // const [cord, setCord] = useState(null)
-    // const [cordX, setCordX] = useState(null)
-    // const [startCord, setStartCord] = useState(null)
+    const [taskSizing, setTaskSizing] = useState(false)
+    
+    const wrapper = useRef(null)
+    const overFlow = useRef(null)
 
     const getDayName = (day) => {
-        const days = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
         return days[day]
     }
 
-    const hourArray = (() => {
-        const arr = new Array(24)
-        for (let i = 0; i < arr.length; i++) {
-            arr[i] = `${i}:00`
+    useEffect(() => {
+        if (taskSizing) {
+            const localNewTask = { ...newTask }
+            const handler = (e) => {
+                const height = e.pageY - taskSizing.taskBar.getBoundingClientRect().top
+                const [hFrom, hTo] = [
+                    taskSizing.fromHeight,
+                    height
+                ].sort((a, b) => a - b)
+                localNewTask.timeFrom = heightToTime(hFrom)
+                localNewTask.timeTo = heightToTime(hTo)
+                setNewTask({ ...localNewTask })
+            }
+            const mouseupHandler = () => {
+                const newTaskArray = [...taskArray]
+                newTaskArray[taskSizing.dayIndex] = [...newTaskArray[taskSizing.dayIndex], localNewTask]
+                setTaskSizing(false)
+                setTaskArray(newTaskArray)
+                setNewTask({})
+            }
+            document.addEventListener('mousemove', handler)
+            document.addEventListener('mouseup', mouseupHandler)
+            return () => {
+                document.removeEventListener('mousemove', handler)
+                document.removeEventListener('mouseup', mouseupHandler)
+            }
         }
-        return arr
-    })()
-
-    // const addTask = (e, day) => {
-    //     // const a = JSON.stringify(taskArray)
-    //     const newTaskArray = [...taskArray]
-    //     const cord = e.pageY - e.currentTarget.getBoundingClientRect().top
-    //     newTaskArray[day].notes = [...newTaskArray[day].notes, { top: cord - (cord % 12.5), height: 100, note: 'Пустая заметка' }]
-    //     // console.log(a === JSON.stringify(taskArray))
-    //     setTaskArray([...newTaskArray])
-    //     // переписать без мутации стейта
-    // }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [taskSizing])
 
     useEffect(() => {
         setActiveDay(day)
@@ -63,33 +93,33 @@ function MainCalendar({ day }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeDay])
 
+  // дата формата 'yyyy-mm-dd' из объекта date
+
     useEffect(() => {
         const answer = [
-            // { id: 1, dateFrom: '2022-02-14', timeFrom: '12:00', dateTo: '2022-02-14', timeTo: '13:00', name: 'Имя события 1' },
-            // { id: 2, dateFrom: '2022-02-14', timeFrom: '14:00', dateTo: '2022-02-14', timeTo: '15:00', name: 'Имя события 2' },
-            // { id: 3, dateFrom: '2022-02-15', timeFrom: '11:00', dateTo: '2022-02-15', timeTo: '13:00', name: 'Имя события 3' },
-            // { id: 4, dateFrom: '2022-02-21', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
-            // { id: 5, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
-            // { id: 6, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
-            // { id: 7, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
-            { id: 8, dateFrom: '2022-02-15', timeFrom: '12:00', dateTo: '2022-02-15', timeTo: '12:15', name: 'Имя события 1' },
-            { id: 9, dateFrom: '2022-02-15', timeFrom: '12:15', dateTo: '2022-02-15', timeTo: '12:30', name: 'Имя события 1' },
-            { id: 10, dateFrom: '2022-02-15', timeFrom: '12:30', dateTo: '2022-02-15', timeTo: '12:45', name: 'Имя события 1' },
-            { id: 11, dateFrom: '2022-02-15', timeFrom: '12:45', dateTo: '2022-02-15', timeTo: '13:00', name: 'Имя события 1' },
+            { id: 1, dateFrom: '2022-02-25', timeFrom: '12:00', dateTo: '2022-02-14', timeTo: '13:00', name: 'Имя события 1' },
+            { id: 2, dateFrom: '2022-02-26', timeFrom: '14:00', dateTo: '2022-02-14', timeTo: '15:00', name: 'Имя события 2' },
+            { id: 3, dateFrom: '2022-03-01', timeFrom: '11:00', dateTo: '2022-02-15', timeTo: '13:00', name: 'Имя события 3' },
+            { id: 4, dateFrom: '2022-03-02', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
+            { id: 5, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
+            { id: 6, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
+            { id: 7, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
         ]
-        const newTaskArray = new Array(7).fill([])
-        weekArray.forEach((day, key) => {
-            day = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+        const newTaskArray = new Array(7)
+        for (let i = 0; i < 7; i++) {
+            newTaskArray[i] = []
+        }
+        weekArray.forEach((day, i) => {
+            day = getDate(day)
             answer.forEach((task) => {
                 if (task.dateFrom === day) {
-                    //  newTaskArray[key].push(task) // почему такое поведение?
-                    newTaskArray[key] = [...newTaskArray[key], task]
+                    newTaskArray[i].push(task)
                 }
             })
         })
         setTaskArray(newTaskArray)
-
-    }, [])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [weekArray])
 
     return (
         <div className={s.wrapper} >
@@ -102,33 +132,57 @@ function MainCalendar({ day }) {
                     </div>
                 ))}
             </div >
-            <div className={s.col_wrapper}>
-                <div className={s.col}>
-                    {hourArray.map((key) => (
-                        <div className={s.border} key={key}></div>
-                    ))}
-                </div>
-                <div className={s.precol}>
-                    {hourArray.map((hour, key) => (
-                        <div className={s.preCell} key={key}>{hour}</div>
-                    ))}
-                </div>
-                {weekArray && weekArray.map((day, key) => (
-                    <div className={s.taskBar}
-                        key={day}
-                        onMouseDown={(e) => {
-                            console.log(e.pageY - e.currentTarget.getBoundingClientRect().top - (e.pageY - e.currentTarget.getBoundingClientRect().top) % 12.5)
-                                setNewTask({})
-                        }}
-                    >
-                        {taskArray[key] && taskArray[key].map((task, taskKey) => (
-                            <Task task={task} key={taskKey} />
+            <div className={s.overFlow} ref={overFlow}>
+                <div className={s.col_wrapper} ref={wrapper}>
+                    <div className={s.col}>
+                        {hourArray.map((key) => (
+                            <div className={s.border} key={key}></div>
                         ))}
-                        {newTask && <Task task={newTask} />}
                     </div>
-                ))}
+                    <div className={s.precol}>
+                        {hourArray.map((hour, key) => (
+                            <div className={s.preCell} key={key}>{hour}</div>
+                        ))}
+                    </div>
+                    {weekArray && weekArray.map((day, dayIndex) => (
+                        // <div className={s.taskBar}
+                        <div className={`${s.taskBar} taskBar`}
+                            key={day}
+                            onMouseDown={(e) => {
+                                const hourHeight = 50
+                                const height = e.pageY - e.currentTarget.getBoundingClientRect().top
+                                const h = Math.floor(height / hourHeight)
+                                const m = Math.floor(height % hourHeight / hourHeight * 4) * 15
+                                const newTaskObj = {
+                                    id: 'new',
+                                    dateFrom: getDate(day),
+                                    timeFrom: `${h}:${m.toString().padStart(2, '0')}`,
+                                    dateTo: getDate(day),
+                                    timeTo: `${h}:${(m + 15).toString().padStart(2, '0')}`,
+                                    name: 'Без имени'
+                                }
+                                setNewTask(newTaskObj)
+                                setTaskSizing({ taskBar: e.currentTarget, fromHeight: height, dayIndex })
+                            }}
+                        >
+                            {taskArray[dayIndex] && taskArray[dayIndex].map((task, taskKey) => (
+                                <Task task={task}
+                                    key={taskKey}
+                                    heightToTime={heightToTime}
+                                    dayIndex={dayIndex}
+                                    taskArray={taskArray}
+                                    setTaskArray={setTaskArray}
+                                    taskIndex={taskKey}
+                                    wrapper={wrapper.current}
+                                    overFlow={overFlow.current}
+                                />
+                            ))}
+                            {newTask && newTask.dateFrom === getDate(day) && <Task task={newTask} />}
+                        </div>
+                    ))}
+                </div>
             </div>
-        </div>
+        </div >
     )
 }
 
