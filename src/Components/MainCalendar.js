@@ -1,27 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import s from './MainCalendar.module.css';
 import Task from './Task';
+import { getHourArray, hourHeight, getDate, heightToTime } from '../util';
 
 // http://backend.my/events?from=2022-01-01&to=2022-02-28
 const days = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
-const hourArray = (() => {
-    const arr = new Array(24)
-    for (let i = 0; i < arr.length; i++) {
-        arr[i] = `${i}:00`
-    }
-    return arr
-})()
-
-const heightToTime = (height) => {
-    const hourHeight = 50
-    const h = Math.floor(height / hourHeight)
-    const m = Math.floor(height % hourHeight / hourHeight * 4) * 15
-    return `${h}:${m.toString().padStart(2, '0')}`
-}
-
-const getDate = (date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
+const hourArray = getHourArray()
 
 function MainCalendar({ day }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,6 +30,7 @@ function MainCalendar({ day }) {
     const [taskArray, setTaskArray] = useState([])
     const [newTask, setNewTask] = useState({})
     const [taskSizing, setTaskSizing] = useState(false)
+    const [taskEditing, setTaskEditing] = useState(false)
 
     const wrapper = useRef(null)
     const overFlow = useRef(null)
@@ -64,11 +49,9 @@ function MainCalendar({ day }) {
                     height
                 ].sort((a, b) => a - b)
                 localNewTask.timeFrom = heightToTime(hFrom)
-                if (heightToTime(hFrom) !== heightToTime(hTo)) { // проверка что таска не менее 15 минут
-                    localNewTask.timeTo = heightToTime(hTo)
-                }
-                else {
-                    localNewTask.timeTo = heightToTime(hTo + 12.5) // 12.5 число одного деления не позволяющее сдлеть таску менее 15 минут
+                localNewTask.timeTo = heightToTime(hTo)
+                if (localNewTask.timeFrom === localNewTask.timeTo) {
+                    localNewTask.timeTo = heightToTime(hourHeight / 4) // число одного деления не позволяющее сдлеть таску менее 15 минут
                 }
                 setNewTask({ ...localNewTask })
             }
@@ -136,7 +119,7 @@ function MainCalendar({ day }) {
                         <div className={s.date}>{day.getDate()}</div>
                     </div>
                 ))}
-            </div >
+            </div>
             <div className={s.overFlow} ref={overFlow}>
                 <div className={s.col_wrapper} ref={wrapper}>
                     <div className={s.col}>
@@ -154,7 +137,7 @@ function MainCalendar({ day }) {
                         <div className={`${s.taskBar} taskBar`}
                             key={day}
                             onMouseDown={(e) => {
-                                if (e.button === 0) {
+                                if (e.button === 0 && !taskEditing) {
                                     const hourHeight = 50
                                     const height = e.pageY - e.currentTarget.getBoundingClientRect().top
                                     const h = Math.floor(height / hourHeight)
@@ -182,6 +165,7 @@ function MainCalendar({ day }) {
                                     taskIndex={taskKey}
                                     wrapper={wrapper.current}
                                     overFlow={overFlow.current}
+                                    setTaskEditing={setTaskEditing}
                                 />
                             ))}
                             {newTask && newTask.dateFrom === getDate(day) && <Task task={newTask} />}

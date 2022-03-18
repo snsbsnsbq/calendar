@@ -1,8 +1,10 @@
 import { useRef } from 'react';
 import { useEffect, useState } from 'react/cjs/react.development';
 import s from './Task.module.css';
+import TaskControlModalWindow from './TaskControlModalWindow';
+import { hourHeight, heightToTime, timeToPixels } from '../util'
 
-function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex, wrapper, overFlow }) {
+function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper, overFlow, setTaskEditing }) {
 
     const [localTask, setLocalTask] = useState(task)
     const [movable, setMovable] = useState(false)
@@ -11,6 +13,8 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
     const [pageX, setPageX] = useState(0)
     const [inputAvailable, setInputAvailable] = useState(false)
     const [inputValue, setInputValue] = useState('')
+    const [showTaskControlModalWindow, setShowTaskControlModalWindow] = useState(false)
+    const [taskControlModalWindowCords, setTaskControlModalWindowCords] = useState({})
 
     const input = useRef(null)
 
@@ -19,7 +23,7 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
     }, [task])             //обновление от глобального стейта
 
     useEffect(() => {
-        if (movable && !inputAvailable) {
+        if (movable) {
             const newLocalTask = { ...localTask }
             let taskBarEndIndex = dayIndex
             const handler = (e) => {
@@ -88,7 +92,7 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
     }, [movable])
 
     useEffect(() => {
-        if (dragable && !inputAvailable) {
+        if (dragable) {
             const newLocalTask = { ...localTask }
             const handler = (e) => {
                 const height = e.pageY - wrapper.getBoundingClientRect().top
@@ -96,7 +100,7 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
                     newLocalTask.timeTo = heightToTime(height)
                 }
                 else {
-                    newLocalTask.timeTo = heightToTime(height + 12.5) // 12.5 цена одного деления
+                    newLocalTask.timeTo = heightToTime(height + hourHeight / 4)
                 }
 
                 setLocalTask({ ...newLocalTask })
@@ -131,6 +135,7 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
             newTaskArray[dayIndex][taskIndex] = newLocalTask
             setTaskArray(newTaskArray)
             setInputAvailable(false)
+            setTaskEditing(false)
         }
     }
 
@@ -147,30 +152,15 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
         newTaskArray[dayIndex][taskIndex] = newLocalTask
         setTaskArray(newTaskArray)
         setInputAvailable(false)
+        setTaskEditing(false)
     }
 
-    const deleteTask = (e) => {
+    const showTtaskControlModalWindowCords = (e) => {
         e.preventDefault()
-        const newTaskArray = [...taskArray]
-        newTaskArray[dayIndex].splice(taskIndex, 1)
-        setTaskArray(newTaskArray)
-    }
-
-    // useEffect(() => {
-    //     if (inputAvailable) {
-    //         const handler = (e) => {
-    //             if (e.target !== input) {
-    //                 setInputAvailable(false)
-    //             }
-    //             document.addEventListener('click', handler)
-    //         }
-    //         return document.removeEventListener('click', handler)
-    //     }
-    // }, [inputAvailable])
-
-    const timeToPixels = (time) => {
-        const [h, m] = time.split(':')
-        return (h * 60 + +m) / 15 * 12.5
+        setShowTaskControlModalWindow(true)
+        const pageX = e.pageX - e.target.getBoundingClientRect().left
+        const pageY = e.pageY - wrapper.getBoundingClientRect().top
+        setTaskControlModalWindowCords({ pageX, pageY })
     }
 
     const top = timeToPixels(localTask.timeFrom)
@@ -183,15 +173,21 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
                 onClick={(e) => e.stopPropagation()}
                 onMouseDown={(e) => {
                     e.stopPropagation()
-                    setMoveIndent(e.pageY - e.target.getBoundingClientRect().top)
-                    setMovable(true)
+                    if (!inputAvailable) {
+                        setMoveIndent(e.pageY - e.target.getBoundingClientRect().top)
+                        setMovable(true)
+                    }
+                }
+                }
+                onDoubleClick={() => {
+                    setInputAvailable(true)
+                    setTaskEditing(true)
                 }}
-                onDoubleClick={() => setInputAvailable(true)}
-                onContextMenu={(e) => deleteTask(e)}
+                onContextMenu={(e) => showTtaskControlModalWindowCords(e)}
             >
                 {inputAvailable
                     ? <input
-                        style={{ width: '95%' }}
+                        style={{ width: '95%', border: 'none' }}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => enterHandler(e.key)}
@@ -208,6 +204,13 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
                     }}
                 ></div>
             </div>
+            {showTaskControlModalWindow && <TaskControlModalWindow
+                taskControlModalWindowCords={taskControlModalWindowCords}
+                taskArray={taskArray}
+                dayIndex={dayIndex}
+                taskIndex={taskIndex}
+                setTaskArray={setTaskArray}
+            />}
         </>
     )
 }
