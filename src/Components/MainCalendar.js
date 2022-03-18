@@ -46,7 +46,7 @@ function MainCalendar({ day }) {
     const [taskArray, setTaskArray] = useState([])
     const [newTask, setNewTask] = useState({})
     const [taskSizing, setTaskSizing] = useState(false)
-    
+
     const wrapper = useRef(null)
     const overFlow = useRef(null)
 
@@ -64,7 +64,12 @@ function MainCalendar({ day }) {
                     height
                 ].sort((a, b) => a - b)
                 localNewTask.timeFrom = heightToTime(hFrom)
-                localNewTask.timeTo = heightToTime(hTo)
+                if (heightToTime(hFrom) !== heightToTime(hTo)) { // проверка что таска не менее 15 минут
+                    localNewTask.timeTo = heightToTime(hTo)
+                }
+                else {
+                    localNewTask.timeTo = heightToTime(hTo + 12.5) // 12.5 число одного деления не позволяющее сдлеть таску менее 15 минут
+                }
                 setNewTask({ ...localNewTask })
             }
             const mouseupHandler = () => {
@@ -93,12 +98,12 @@ function MainCalendar({ day }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeDay])
 
-  // дата формата 'yyyy-mm-dd' из объекта date
+    // дата формата 'yyyy-mm-dd' из объекта date
 
     useEffect(() => {
         const answer = [
-            { id: 1, dateFrom: '2022-02-25', timeFrom: '12:00', dateTo: '2022-02-14', timeTo: '13:00', name: 'Имя события 1' },
-            { id: 2, dateFrom: '2022-02-26', timeFrom: '14:00', dateTo: '2022-02-14', timeTo: '15:00', name: 'Имя события 2' },
+            { id: 1, dateFrom: '2022-03-16', timeFrom: '12:00', dateTo: '2022-02-14', timeTo: '13:00', name: 'Имя события 1' },
+            { id: 2, dateFrom: '2022-03-15', timeFrom: '14:00', dateTo: '2022-02-14', timeTo: '15:00', name: 'Имя события 2' },
             { id: 3, dateFrom: '2022-03-01', timeFrom: '11:00', dateTo: '2022-02-15', timeTo: '13:00', name: 'Имя события 3' },
             { id: 4, dateFrom: '2022-03-02', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
             { id: 5, dateFrom: '2022-01-01', timeFrom: '12:00', dateTo: '2022-01-01', timeTo: '13:00', name: 'Имя события 1' },
@@ -149,20 +154,22 @@ function MainCalendar({ day }) {
                         <div className={`${s.taskBar} taskBar`}
                             key={day}
                             onMouseDown={(e) => {
-                                const hourHeight = 50
-                                const height = e.pageY - e.currentTarget.getBoundingClientRect().top
-                                const h = Math.floor(height / hourHeight)
-                                const m = Math.floor(height % hourHeight / hourHeight * 4) * 15
-                                const newTaskObj = {
-                                    id: 'new',
-                                    dateFrom: getDate(day),
-                                    timeFrom: `${h}:${m.toString().padStart(2, '0')}`,
-                                    dateTo: getDate(day),
-                                    timeTo: `${h}:${(m + 15).toString().padStart(2, '0')}`,
-                                    name: 'Без имени'
+                                if (e.button === 0) {
+                                    const hourHeight = 50
+                                    const height = e.pageY - e.currentTarget.getBoundingClientRect().top
+                                    const h = Math.floor(height / hourHeight)
+                                    let m = Math.floor(height % hourHeight / hourHeight * 4) * 15
+                                    const newTaskObj = {
+                                        id: 'new',
+                                        dateFrom: getDate(day),
+                                        timeFrom: `${h}:${m.toString().padStart(2, '0')}`,
+                                        dateTo: getDate(day),
+                                        timeTo: `${h}:${(m + 15).toString().padStart(2, '0')}`,
+                                        name: 'Без имени'
+                                    }
+                                    setNewTask(newTaskObj)
+                                    setTaskSizing({ taskBar: e.currentTarget, fromHeight: height, dayIndex })
                                 }
-                                setNewTask(newTaskObj)
-                                setTaskSizing({ taskBar: e.currentTarget, fromHeight: height, dayIndex })
                             }}
                         >
                             {taskArray[dayIndex] && taskArray[dayIndex].map((task, taskKey) => (

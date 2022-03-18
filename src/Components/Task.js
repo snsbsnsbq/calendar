@@ -19,7 +19,7 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
     }, [task])             //обновление от глобального стейта
 
     useEffect(() => {
-        if (movable) {
+        if (movable && !inputAvailable) {
             const newLocalTask = { ...localTask }
             let taskBarEndIndex = dayIndex
             const handler = (e) => {
@@ -52,8 +52,6 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
                     newLocalTask.timeFrom = heightToTime(height - moveIndent)
                 }
 
-                // newLocalTask.timeTo = heightToTime(height + (timeToPixels(localTask.timeTo) - timeToPixels(localTask.timeFrom)) - moveIndent)
-                // timeTo 
                 if (timeToPixels(heightToTime(height + (timeToPixels(localTask.timeTo) - timeToPixels(localTask.timeFrom)) - moveIndent)) >= 1200) {
                     newLocalTask.timeTo = '23:59'
                 }
@@ -90,11 +88,17 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
     }, [movable])
 
     useEffect(() => {
-        if (dragable) {
+        if (dragable && !inputAvailable) {
             const newLocalTask = { ...localTask }
             const handler = (e) => {
                 const height = e.pageY - wrapper.getBoundingClientRect().top
-                newLocalTask.timeTo = heightToTime(height)
+                if (newLocalTask.timeFrom !== heightToTime(height)) { // проверка, что таска не равна 0 минутам
+                    newLocalTask.timeTo = heightToTime(height)
+                }
+                else {
+                    newLocalTask.timeTo = heightToTime(height + 12.5) // 12.5 цена одного деления
+                }
+
                 setLocalTask({ ...newLocalTask })
             }
             const mouseupHandler = () => {
@@ -113,17 +117,56 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
         }
     }, [dragable])
 
-    useEffect(() => {
-        if (inputAvailable) {
-            const handler = (e) => {
-                if (e.target !== input) {
-                    setInputAvailable(false)
-                }
-                document.addEventListener('click', handler)
+    const enterHandler = (key) => {
+        if (key === "Enter") {
+            const newLocalTask = { ...localTask }
+            if (inputValue === '') {
+                newLocalTask.name = 'Без имени'
             }
-            return document.removeEventListener('click', handler)
+            else {
+                newLocalTask.name = inputValue
+            }
+            const newTaskArray = [...taskArray]
+            newTaskArray[dayIndex] = [...newTaskArray[dayIndex]]
+            newTaskArray[dayIndex][taskIndex] = newLocalTask
+            setTaskArray(newTaskArray)
+            setInputAvailable(false)
         }
-    }, [inputAvailable])
+    }
+
+    const onblurHandler = () => {
+        const newLocalTask = { ...localTask }
+        if (inputValue === '') {
+            newLocalTask.name = 'Без имени'
+        }
+        else {
+            newLocalTask.name = inputValue
+        }
+        const newTaskArray = [...taskArray]
+        newTaskArray[dayIndex] = [...newTaskArray[dayIndex]]
+        newTaskArray[dayIndex][taskIndex] = newLocalTask
+        setTaskArray(newTaskArray)
+        setInputAvailable(false)
+    }
+
+    const deleteTask = (e) => {
+        e.preventDefault()
+        const newTaskArray = [...taskArray]
+        newTaskArray[dayIndex].splice(taskIndex, 1)
+        setTaskArray(newTaskArray)
+    }
+
+    // useEffect(() => {
+    //     if (inputAvailable) {
+    //         const handler = (e) => {
+    //             if (e.target !== input) {
+    //                 setInputAvailable(false)
+    //             }
+    //             document.addEventListener('click', handler)
+    //         }
+    //         return document.removeEventListener('click', handler)
+    //     }
+    // }, [inputAvailable])
 
     const timeToPixels = (time) => {
         const [h, m] = time.split(':')
@@ -144,8 +187,19 @@ function Task({ task, heightToTime, dayIndex, taskArray, setTaskArray, taskIndex
                     setMovable(true)
                 }}
                 onDoubleClick={() => setInputAvailable(true)}
+                onContextMenu={(e) => deleteTask(e)}
             >
-                {inputAvailable ? <input value={inputValue} onChange={(e) => setInputValue(e.target.value)} ref={input} autoFocus /> : <>{task.name}</>}
+                {inputAvailable
+                    ? <input
+                        style={{ width: '95%' }}
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => enterHandler(e.key)}
+                        onBlur={onblurHandler}
+                        ref={input}
+                        autoFocus
+                    />
+                    : task.name}
                 <div className={s.taskBorder}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => {
