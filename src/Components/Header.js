@@ -1,7 +1,7 @@
 import s from './Header.module.css';
 import logo from '../assets/logo.png'
 
-function Header({ setDay, day }) {
+let Header = ({ setDay, day }) => {
 
     const prevWeek = () => {
         const date = new Date(day)
@@ -25,7 +25,7 @@ function Header({ setDay, day }) {
                     Календарь
                 </div>
             </div>
-            <div className={s.day} onClick={()=>setDay(new Date())}>
+            <div className={s.day} onClick={() => setDay(new Date())}>
                 Сегодня
             </div>
             <div className={s.arrow} onClick={() => prevWeek()}>&#60;</div>
@@ -36,5 +36,7 @@ function Header({ setDay, day }) {
         </div>
     );
 }
+
+
 
 export default Header;

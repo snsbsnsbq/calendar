@@ -3,13 +3,13 @@
     position: absolute;
     width: 100%;
     z-index: 6;
-    background-color: fuchsia;
     opacity: 0.4;
     top: 0px;
     border-radius: 10px;
     border: 1px solid black;
     cursor: move;
     -webkit-user-select: none;
+    -webkit-transition: background-color 0.3s;
 }
 
 .taskBorder {
@@ -20,4 +20,3 @@
     bottom: -10px;
     cursor: s-resize;
 }
-

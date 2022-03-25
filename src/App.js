@@ -2,7 +2,7 @@ import s from './App.module.css';
 import Header from './Components/Header';
 import CalendarBar from './Components/CalendarBar';
 import MainCalendar from './Components/MainCalendar';
-import {useState } from 'react';
+import { useState } from 'react';
 
 function App() {
 
@@ -10,10 +10,10 @@ function App() {
 
   return (
     <>
-      <Header setDay={setDay} day={day}/>
+      <Header setDay={setDay} day={day} />
       <div className={s.wrapper}>
         <CalendarBar />
-        <MainCalendar day={day}/>
+        <MainCalendar day={day} />
       </div>
     </>
   );

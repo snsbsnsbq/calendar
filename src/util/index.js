@@ -14,6 +14,7 @@ export const heightToTime = (height) => {
     return `${h}:${m.toString().padStart(2, '0')}`
 }
 
+// дата формата 'yyyy-mm-dd' из объекта date
 export const getDate = (date) => {
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -22,3 +23,13 @@ export const timeToPixels = (time) => {
     const [h, m] = time.split(':')
     return (+h + +m / 60) * hourHeight
 }
+
+export const colorArray = ['fuchsia', 'red', 'green', 'yellow', 'blue']
+
+export const getDayIndex = (date) => {
+    if (date.getDay() === 0) {
+        return 6
+    }
+    return date.getDay() - 1
+}
+

@@ -4,5 +4,9 @@
     width: 150px;
     height: 105px;
     z-index: 1000;
-    background-color: white;
+    background-color: #c8c8c8;
+}
+
+.active {
+    border: 2px solid white;
 }
