@@ -4,15 +4,18 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 const initialState = {
     showTaskControlModalWindow: false,
     response: [],
-    idCounter: 0
+    idCounter: 0,
+    day: new Date()
 }
 
 export const reducer = (state = initialState, action) => {
     switch (action.type) {
-        case "SET_TASK_CONTROL_MODAL_WINDOW":
+        case "SET_TASK_CONTROL_MODAL_WINDOW": {
+            // ....
             return {
                 ...state, showTaskControlModalWindow: action.payload
             }
+        }
         case "SET_RESPONSE":
             return {
                 ...state, response: action.payload
@@ -20,6 +23,10 @@ export const reducer = (state = initialState, action) => {
         case "SET_ID_COUNTER":
             return {
                 ...state, idCounter: action.payload
+            }
+        case "SET_DAY":
+            return {
+                ...state, day: action.payload
             }
         default: return state
     }

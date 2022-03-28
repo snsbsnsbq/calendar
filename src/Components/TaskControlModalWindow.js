@@ -2,6 +2,7 @@ import s from './TaskControlModalWindow.module.css';
 import basket from '../assets/basket.svg'
 import { colorArray } from '../util';
 import { useDispatch } from 'react-redux';
+import { taskControlModalWindowHeight, taskControlModalWindowWidth } from '../util'
 
 function TaskControlModalWindow({ taskControlModalWindowCords,
     taskArray,
@@ -23,7 +24,9 @@ function TaskControlModalWindow({ taskControlModalWindowCords,
         <div className={s.TaskControlModalWindow}
             style={{
                 top: taskControlModalWindowCords.pageY,
-                left: taskControlModalWindowCords.pageX
+                left: taskControlModalWindowCords.pageX,
+                width: taskControlModalWindowWidth,
+                height: taskControlModalWindowHeight
             }}>
             {!regularVisible ?
                 //первое меню

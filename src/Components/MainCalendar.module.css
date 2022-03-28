@@ -10,6 +10,10 @@
     overflow-y: scroll;
 }
 
+.overFlow::-webkit-scrollbar {
+    width: 0;
+}
+
 .col_wrapper {
     display: flex;
     justify-content: left;
@@ -26,7 +30,7 @@
 .cell {
     margin: 0 auto;
     border-bottom: 1px solid black;
-    flex-grow: 2;
+    flex: 2;
     position: relative;
 }
 
@@ -41,8 +45,19 @@
 } */
 
 .date {
-    font-size: 25px;
+    font-size: 20px;
     text-align: center;
+    height: 30px;
+    width: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: 'center';
+}
+
+.date-active {
+    color: aliceblue;
+    border-radius: 100%;
+    background-color: blue;
 }
 
 
@@ -84,7 +99,7 @@
 .preCell_header {
     box-sizing: border-box;
     position: relative;
-    height: 50px;
+    height: 67px;
     min-width: 60px;
     padding: 10px;
     -webkit-user-select: none;
@@ -157,4 +172,11 @@
     position: relative;
     background-color: white;
     border-left: 1px solid black;
+}
+
+.dayOff {
+    font-size: 10px;
+    height: 15px;
+    /* width: 95%; */
+    text-align: center;
 }

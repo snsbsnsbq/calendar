@@ -3,13 +3,14 @@
     position: absolute;
     width: 100%;
     z-index: 6;
-    opacity: 0.4;
     top: 0px;
     border-radius: 10px;
     border: 1px solid black;
     cursor: move;
+    text-overflow: ellipsis;
     -webkit-user-select: none;
     -webkit-transition: background-color 0.3s;
+    overflow: hidden;
 }
 
 .taskBorder {
@@ -19,4 +20,13 @@
     position: absolute;
     bottom: -10px;
     cursor: s-resize;
+}
+
+.small {
+    font-size: 0.7em;
+}
+
+.task span {
+    vertical-align: top;
+    white-space: nowrap;
 }

@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import s from './MainCalendar.module.css';
 import Task from './Task';
 import TimeArrow from './TimeArrow';
-import { getHourArray, hourHeight, getDate, heightToTime, getDayIndex } from '../util';
+import { getHourArray, hourHeight, getDate, heightToTime, getDayIndex, getDayOffName } from '../util';
 import { useDispatch, useSelector } from 'react-redux';
+import axios from 'axios';
 
 // http://backend.my/events?from=2022-01-01&to=2022-02-28
 const days = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
@@ -24,10 +25,11 @@ const getIdCounter = () => {
     return 0
 }
 
-function MainCalendar({ day }) {
+function MainCalendar() {
 
     //redux
     const dispatch = useDispatch()
+    const day = useSelector(state => state.day)
     const response = useSelector(state => state.response)
     const idCounter = useSelector(state => state.idCounter)
 
@@ -88,10 +90,28 @@ function MainCalendar({ day }) {
         }
         else {
             if (regularTaskUpdateStatus === 'allTasks') { // изменение всех повторяющихся заметок
-                if (response[index].dateFrom !== task.dateFrom) {
-
+                let dayDifference = false
+                if (response[index].dateFrom !== task.dateFrom) { // проверка на изменение дня в заметке
+                    let [year, month, day] = response[index].dateFrom.split('-')
+                    const oldDate = new Date(year, month - 1, day)
+                    const [newYear, newMonth, newDay] = task.dateFrom.split('-')
+                    const newDate = new Date(newYear, newMonth - 1, newDay)
+                    console.log(newDate.getDay() - oldDate.getDay())
+                    dayDifference = newDate.getDay() - oldDate.getDay()
                 }
                 for (let iterableTask of newResponse) {
+                    let dateFrom = null
+                    let dateTo = null
+                    if (dayDifference) {
+                        let [dateFromYear, dateFromMonth, dateFromDay] = iterableTask.dateFrom.split('-')
+                        dateFrom = new Date(dateFromYear, dateFromMonth - 1, dateFromDay)
+                        dateFrom.setDate(dateFrom.getDate() + dayDifference)
+                        let [dateToYear, dateToMonth, dateToDay] = iterableTask.dateTo.split('-')
+                        dateTo = new Date(dateToYear, dateToMonth - 1, dateToDay)
+                        dateTo.setDate(dateTo.getDate() + dayDifference)
+                        dateFrom = getDate(dateFrom)  // дата формата 'yyyy-mm-dd' из объекта date
+                        dateTo = getDate(dateTo)
+                    }
                     if (iterableTask.periodGroupId === task.periodGroupId) {
                         newResponse[newResponse.indexOf(iterableTask)] = {
                             ...iterableTask,
@@ -99,8 +119,8 @@ function MainCalendar({ day }) {
                             timeTo: task.timeTo,
                             name: task.name,
                             color: task.color,
-                            dateFrom: iterableTask.dateFrom,
-                            dateTo: iterableTask.dateTo
+                            dateFrom: dayDifference ? dateFrom : iterableTask.dateFrom,
+                            dateTo: dayDifference ? dateTo : iterableTask.dateTo
                         }
                     }
                 }
@@ -109,9 +129,30 @@ function MainCalendar({ day }) {
             else if (regularTaskUpdateStatus === 'futureTasks') {
                 const [year, month, day] = newResponse[index].dateFrom.split('-')
                 const dateFromPeriod = new Date(year, month - 1, day)
+                let dayDifference = false
+                if (response[index].dateFrom !== task.dateFrom) { // проверка на изменение дня в заметке
+                    let [year, month, day] = response[index].dateFrom.split('-')
+                    const oldDate = new Date(year, month - 1, day)
+                    const [newYear, newMonth, newDay] = task.dateFrom.split('-')
+                    const newDate = new Date(newYear, newMonth - 1, newDay)
+                    console.log(newDate.getDay() - oldDate.getDay())
+                    dayDifference = newDate.getDay() - oldDate.getDay()
+                }
                 for (let iterableTask of newResponse) {
                     const [year, month, day] = iterableTask.dateFrom.split('-')
                     const dateFromIterableTask = new Date(year, month - 1, day)
+                    let dateFrom = null
+                    let dateTo = null
+                    if (dayDifference) {
+                        let [dateFromYear, dateFromMonth, dateFromDay] = iterableTask.dateFrom.split('-')
+                        dateFrom = new Date(dateFromYear, dateFromMonth - 1, dateFromDay)
+                        dateFrom.setDate(dateFrom.getDate() + dayDifference)
+                        let [dateToYear, dateToMonth, dateToDay] = iterableTask.dateTo.split('-')
+                        dateTo = new Date(dateToYear, dateToMonth - 1, dateToDay)
+                        dateTo.setDate(dateTo.getDate() + dayDifference)
+                        dateFrom = getDate(dateFrom)  // дата формата 'yyyy-mm-dd' из объекта date
+                        dateTo = getDate(dateTo)
+                    }
                     // проверки id группы повторяющихся заметок и дат
                     if (iterableTask.periodGroupId === task.periodGroupId && dateFromIterableTask >= dateFromPeriod) {
                         newResponse[newResponse.indexOf(iterableTask)] = {
@@ -119,19 +160,22 @@ function MainCalendar({ day }) {
                             timeFrom: task.timeFrom,
                             timeTo: task.timeTo,
                             name: task.name,
-                            color: task.color
+                            color: task.color,
+                            dateFrom: dayDifference ? dateFrom : iterableTask.dateFrom,
+                            dateTo: dayDifference ? dateTo : iterableTask.dateTo
                         }
                     }
                     else if (iterableTask.periodGroupId === task.periodGroupId && dateFromIterableTask < dateFromPeriod) {
-                        delete iterableTask.periodGroupId
+                        // delete iterableTask.periodGroupId
                         newResponse[newResponse.indexOf(iterableTask)] = {
                             ...iterableTask,
                         }
                     }
                 }
             }
+
             else if (regularTaskUpdateStatus === 'thisTask') {
-                delete task.periodGroupId
+                // delete task.periodGroupId
                 newResponse[index] = task
             }
         }
@@ -190,7 +234,7 @@ function MainCalendar({ day }) {
     const [newTask, setNewTask] = useState({})
     const [taskSizing, setTaskSizing] = useState(false)
     const [taskEditing, setTaskEditing] = useState(false)
-    //  const [idCounter, setIdCounter] = useState(getIdCounter()) //счетчик Id
+    const [dayOffArray, setDayOffArray] = useState(false)
 
     const wrapper = useRef(null)
     const overFlow = useRef(null)
@@ -242,7 +286,6 @@ function MainCalendar({ day }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeDay])
 
-
     //сохранение счётчика в localTask
     useEffect(() => {
         localStorage.setItem('idCounter', JSON.stringify(idCounter))
@@ -265,14 +308,34 @@ function MainCalendar({ day }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [weekArray])
 
+// запрос производственного календаря
+    useEffect(() => {
+        const periodFrom = `${weekArray[0].getFullYear()}${String(weekArray[0].getMonth() + 1).padStart(2, '0')}${String(weekArray[0].getDate()).padStart(2, '0')}`
+        const periodTo = `${weekArray[6].getFullYear()}${String(weekArray[6].getMonth() + 1).padStart(2, '0')}${String(weekArray[6].getDate()).padStart(2, '0')}`
+        axios.get(`https://isdayoff.ru/api/getdata?date1=${periodFrom}&date2=${periodTo}`).then((res) => {
+            setDayOffArray(String(res.data).split(''))
+        }).catch((err) => {
+            setDayOffArray(false)
+            console.log(err)
+        })
+    }, [day])
+
     return (
         <div className={s.wrapper} >
             <div className={s.header}>
                 <div className={s.preCell_header}></div>
-                {weekArray && weekArray.map((day, key) => (
+                {weekArray && weekArray.map((thisDay, key) => (
                     <div className={s.cell} key={key}>
-                        <div className={s.day}>{getDayName(day.getDay())}</div>
-                        <div className={s.date}>{day.getDate()}</div>
+                        <div className={s.day} style={getDate(thisDay) === getDate(new Date()) ? { color: 'blue' } : {}}>{getDayName(thisDay.getDay())}</div>
+                        <div className="d-flex jc-center">
+                            <div className={`${s.date} + ${getDate(thisDay) === getDate(new Date()) ? s['date-active'] : ''}`}>
+                                {thisDay.getDate()}
+                            </div>
+                        </div>
+                        <div className={s.dayOff}
+                            style={dayOffArray[key] === '1' ? { background: 'green' } : {}}>
+                            {dayOffArray[key] === '1' ? getDayOffName(thisDay) : ''}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -289,7 +352,6 @@ function MainCalendar({ day }) {
                         ))}
                     </div>
                     {weekArray && weekArray.map((day, dayIndex) => (
-                        // <div className={s.taskBar}
                         <div className={`${s.taskBar} taskBar`}
                             key={day}
                             onMouseDown={(e) => {
@@ -307,7 +369,6 @@ function MainCalendar({ day }) {
                                         name: 'Без имени',
                                         color: 'fuchsia'
                                     }
-                                    //setIdCounter(idCounter + 1)
                                     dispatch({ type: "SET_ID_COUNTER", payload: idCounter + 1 })
                                     setNewTask(newTaskObj)
                                     setTaskSizing({ taskBar: e.currentTarget, fromHeight: height, dayIndex })

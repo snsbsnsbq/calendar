@@ -1,18 +1,26 @@
 import s from './Header.module.css';
 import logo from '../assets/logo.png'
+import { useDispatch, useSelector } from 'react-redux';
 
-let Header = ({ setDay, day }) => {
+let Header = ({ setDay }) => {
+
+    //redux
+    const dispatch = useDispatch()
+    const day = useSelector(state => state.day)
 
     const prevWeek = () => {
         const date = new Date(day)
         date.setDate(date.getDate() - 7)
-        setDay(date)
+        dispatch({ type: "SET_DAY", payload: date })
+        console.log(date)
+       // setDay(date)
     }
 
     const nextWeek = () => {
         const date = new Date(day)
         date.setDate(date.getDate() + 7)
-        setDay(date)
+       // setDay(date)
+        dispatch({ type: "SET_DAY", payload: date })
     }
 
     return (
@@ -25,7 +33,7 @@ let Header = ({ setDay, day }) => {
                     Календарь
                 </div>
             </div>
-            <div className={s.day} onClick={() => setDay(new Date())}>
+            <div className={s.day} onClick={() => dispatch({ type: "SET_DAY", payload: new Date() })}>
                 Сегодня
             </div>
             <div className={s.arrow} onClick={() => prevWeek()}>&#60;</div>

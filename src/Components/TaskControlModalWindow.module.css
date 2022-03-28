@@ -1,8 +1,6 @@
 .TaskControlModalWindow {
     box-sizing: border-box;
     position: absolute;
-    width: 150px;
-    height: 105px;
     z-index: 1000;
     background-color: #c8c8c8;
 }

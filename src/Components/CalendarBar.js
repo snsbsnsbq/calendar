@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import s from './CalendarBar.module.css';
 
 function CalendarBar() {
 
-    
+    //redux
+    const dispatch = useDispatch()
+    const day = useSelector(state => state.day)
+
     const firstDay = (date) => {
         const newDate = new Date(date)
         newDate.setDate(1)
         return newDate
     }
 
-    const [activeDay, setActiveDay] = useState(new Date())
     const [monthArray, setMonthArray] = useState(null)
-    const [visibleMonth, setVisibleMonth] = useState(firstDay(activeDay))
+    const [visibleMonth, setVisibleMonth] = useState(firstDay(day))
 
     const changeActiveDay = (day) => {
-        if (activeDay.getMonth() !== day.getMonth()) {
-            setVisibleMonth(firstDay(day))
-            updateMonthArray()
-        }
-        setActiveDay(day)
+        console.log(day)
+        dispatch({ type: "SET_DAY", payload: day })
     }
+
+    useEffect(() => {
+        setVisibleMonth(firstDay(day))
+    }, [day])
 
     const updateMonthArray = () => {
         const date = new Date(visibleMonth)
@@ -41,8 +45,8 @@ function CalendarBar() {
 
     useEffect(() => {
         updateMonthArray()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [visibleMonth ])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [visibleMonth])
 
     const nextMonth = () => {
         const newVisibleMonth = new Date(visibleMonth)
@@ -85,13 +89,13 @@ function CalendarBar() {
                 <div className={s.cellH}>Сб</div>
                 <div className={s.cellH}>Вс</div>
                 {
-                    monthArray && monthArray.map((day, key) => (
+                    monthArray && monthArray.map((thisDay, key) => (
                         <div
-                            className={equalDates(day, activeDay) ? s.cellActive : (visibleMonth.getMonth() === day.getMonth() ? s.cell : s.cellOpacity)}
+                            className={equalDates(thisDay, day) ? s.cellActive : (visibleMonth.getMonth() === thisDay.getMonth() ? s.cell : s.cellOpacity)}
                             key={key}
-                            onClick={() => changeActiveDay(day)}
+                            onClick={() => changeActiveDay(thisDay)}
                         >
-                            {day.getDate()}
+                            {thisDay.getDate()}
                         </div>
                     ))
                 }

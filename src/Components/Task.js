@@ -1,10 +1,12 @@
 import { useRef } from 'react';
-import { useEffect, useState } from 'react/cjs/react.development';
+import { useEffect, useState } from 'react';
 import s from './Task.module.css';
 import TaskControlModalWindow from './TaskControlModalWindow';
-import { hourHeight, heightToTime, timeToPixels, getDate } from '../util'
+import { hourHeight, heightToTime, timeToPixels, getDate, taskControlModalWindowHeight, taskControlModalWindowWidth } from '../util'
 import { useDispatch, useSelector } from "react-redux";
 import Modal from './Modal';
+
+
 
 function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
     overFlow, setTaskEditing, deleteTask, updateTask, makeTaskRegular }) {
@@ -31,6 +33,7 @@ function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
     useEffect(() => {
         setLocalTask(task)
     }, [task])
+
 
     // эффект перемещения заметки
     useEffect(() => {
@@ -85,14 +88,14 @@ function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
                     /// Изменения 
 
                     if (taskBarEndIndex !== dayIndex) { // функционал переноса заметки на другую дату
-                       // newTaskArray[dayIndex].splice(taskIndex, 1) // удаление заметки из массива данного дня
+                        // newTaskArray[dayIndex].splice(taskIndex, 1) // удаление заметки из массива данного дня
                         const days = taskBarEndIndex - dayIndex // количетсво дней с текущей даты 
                         const [year, month, day] = newLocalTask.dateFrom.split('-') // получения массива [гггг, мм, дд]
                         const newDate = new Date(year, month - 1, day) //получение обекта date из текущей даты
                         newDate.setDate(newDate.getDate() + days) // получение новой даты для заметки
                         newLocalTask.dateFrom = getDate(newDate)  // дата формата 'yyyy-mm-dd' из объекта date
                         newLocalTask.dateTo = getDate(newDate)  // дата формата 'yyyy-mm-dd' из объекта date
-                       // newTaskArray[taskBarEndIndex].push(newLocalTask) // пуш новой заметки в необходимую дату
+                        // newTaskArray[taskBarEndIndex].push(newLocalTask) // пуш новой заметки в необходимую дату
                     }
                     // проверка на повторяющееся мероприятие
                     if (!("periodGroupId" in newLocalTask)) {
@@ -123,11 +126,11 @@ function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
             const newLocalTask = { ...localTask }
             const handler = (e) => {
                 const height = e.pageY - wrapper.getBoundingClientRect().top
-                if (newLocalTask.timeFrom !== heightToTime(height)) { // проверка, что таска не равна 0 минутам
+                if (newLocalTask.timeFrom < heightToTime(height)) { // проверка условия, не равна менее 15 минут
                     newLocalTask.timeTo = heightToTime(height)
                 }
                 else {
-                    newLocalTask.timeTo = heightToTime(height + hourHeight / 4)
+                    newLocalTask.timeTo = heightToTime(timeToPixels(localTask.timeFrom) + hourHeight / 4)
                 }
 
                 setLocalTask({ ...newLocalTask })
@@ -242,8 +245,14 @@ function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
     const showTtaskControlModalWindowCords = (e) => {
         e.preventDefault()
         dispatch({ type: "SET_TASK_CONTROL_MODAL_WINDOW", payload: task })
-        const pageX = e.pageX - e.target.getBoundingClientRect().left
-        const pageY = e.pageY - wrapper.getBoundingClientRect().top
+        let pageX = e.pageX - e.target.getBoundingClientRect().left
+        let pageY = e.pageY - wrapper.getBoundingClientRect().top
+        if (document.documentElement.clientHeight - e.pageY < taskControlModalWindowHeight) {
+            pageY = pageY - taskControlModalWindowHeight
+        }
+        if (document.documentElement.clientWidth - e.pageX < taskControlModalWindowWidth) {
+            pageX = pageX - taskControlModalWindowWidth
+        }
         setTaskControlModalWindowCords({ pageX, pageY })
     }
 
@@ -255,7 +264,6 @@ function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
             newTaskArray[dayIndex] = [...newTaskArray[dayIndex]]
             newTaskArray[dayIndex][taskIndex] = newLocalTask
             if (!("periodGroupId" in newLocalTask)) {
-                // setTaskArray(newTaskArray)
                 updateTask(newLocalTask)
             }
             else {
@@ -303,7 +311,17 @@ function Task({ task, dayIndex, taskArray, setTaskArray, taskIndex, wrapper,
                         ref={input}
                         autoFocus
                     />
-                    : task.name}
+                    : <span
+                        className={(timeToPixels(localTask.timeTo) - timeToPixels(localTask.timeFrom) < hourHeight / 4 * 3) ? s.small : ''
+                        }>
+                        {task.name}
+                    </span>}
+                {(timeToPixels(localTask.timeTo) - timeToPixels(localTask.timeFrom) > hourHeight / 4 * 3) ?
+                    <div>{localTask.timeFrom}-{localTask.timeTo}</div>
+                    :
+                    <span className={s.small}>{localTask.timeFrom}-{localTask.timeTo}</span>
+                }
+
                 <div className={s.taskBorder}
                     onClick={(e) => e.stopPropagation()}
                     onMouseDown={(e) => {

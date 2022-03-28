@@ -33,3 +33,21 @@ export const getDayIndex = (date) => {
     return date.getDay() - 1
 }
 
+export const getDayOffName = (date) => {
+    date = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    switch (date) {
+        case '01-01': return 'Новый год'
+        case '01-07': return 'Рождество христово'
+        case '02-23': return 'День защитника отечества'
+        case '03-08': return 'Международный женский день'
+        case '05-01': return 'Праздник Весны и Труда'
+        case '05-09': return 'День Победы'
+        case '06-12': return 'День России'
+        case '11-04': return 'День народного единства'
+        default: return 'Выходной'
+    }
+}
+
+export const taskControlModalWindowHeight = 105
+
+export const taskControlModalWindowWidth = 150
