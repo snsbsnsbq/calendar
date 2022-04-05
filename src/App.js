@@ -7,6 +7,7 @@ function App() {
 
   return (
     <>
+    <div></div>
       <Header />
       <div className={s.wrapper}>
         <CalendarBar />
