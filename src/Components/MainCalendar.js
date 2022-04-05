@@ -318,7 +318,7 @@ function MainCalendar() {
             setDayOffArray(false)
             console.log(err)
         })
-    }, [day])
+    }, [weekArray])
 
     return (
         <div className={s.wrapper} >
